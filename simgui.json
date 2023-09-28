@@ -1,0 +1,33 @@
+{
+  "NTProvider": {
+    "types": {
+      "/AdvantageKit/RealOutputs/Robot Simulation": "Mechanism2d",
+      "/FMSInfo": "FMSInfo"
+    },
+    "windows": {
+      "/AdvantageKit/RealOutputs/Robot Simulation": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "LiveWindow": {
+        "open": true
+      },
+      "Shuffleboard": {
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    }
+  }
+}

@@ -11,16 +11,20 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.common.LoggableFunction.LoggableRecord;
 
-public class BearsSubsystemBase<IN extends LoggableInputs, OUT extends LoggableInputs, GOAL extends LoggableRecord<GOAL>> extends SubsystemBase {
+public abstract class BearsSubsystemBase<IN extends LoggableInputs, OUT extends LoggableInputs, GOAL extends LoggableRecord<GOAL>> extends SubsystemBase {
 
     private final Supplier<IN> input;
     private final Consumer<OUT> output;
-    private final Behavior<IN, OUT, GOAL> behavior;
+    private final Behavior<IN, OUT, GOAL, ?> behavior;
     private GOAL goalState;
     private LoggableFunction<GOAL> loggableGoal;
     private IN currentState;
 
-    public BearsSubsystemBase(Supplier<IN> input, Consumer<OUT> output, Behavior<IN, OUT, GOAL> behavior, GOAL goalState){
+    private final String GOAL_LOG = this.getClass().getSimpleName() + "/goal";
+    private final String INPUT_LOG = this.getClass().getSimpleName() + "/input";
+    private final String OUTPUT_LOG = this.getClass().getSimpleName() + "/output";
+
+    public BearsSubsystemBase(Supplier<IN> input, Consumer<OUT> output, Behavior<IN, OUT, GOAL, ?> behavior, GOAL goalState){
         this.input = input;
         this.output = output;
         this.behavior = behavior;
@@ -34,12 +38,12 @@ public class BearsSubsystemBase<IN extends LoggableInputs, OUT extends LoggableI
 
     @Override
     public void periodic() {
-        Logger.getInstance().processInputs("arm_goal_state", loggableGoal);
+        Logger.getInstance().processInputs(GOAL_LOG, loggableGoal);
         Optional.of(input.get())
-            .map(peek(inputs -> Logger.getInstance().processInputs("arm_input_state", inputs)))
+            .map(peek(inputs -> Logger.getInstance().processInputs(INPUT_LOG, inputs)))
             .map(peek(inputs -> this.currentState = inputs))
             .map(inputs -> behavior.periodic(inputs, goalState))
-            .map(peek(outputs -> Logger.getInstance().processInputs("arm_output_state", outputs)))
+            .map(peek(outputs -> Logger.getInstance().processInputs(OUTPUT_LOG, outputs)))
             .ifPresent(output::accept);
     }
 
@@ -53,6 +57,10 @@ public class BearsSubsystemBase<IN extends LoggableInputs, OUT extends LoggableI
 
     public IN getState() {
         return this.currentState;
+    }
+
+    public Behavior<IN, OUT, GOAL, ?> getBehavior() {
+        return this.behavior;
     }
 
     protected <T> UnaryOperator<T> peek(Consumer<T> c) {

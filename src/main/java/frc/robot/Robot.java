@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -19,6 +21,8 @@ import frc.robot.subsystems.arm.ArmDefaultBehavior;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.arm.hardware.ArmHardwareLayerInterface;
 import frc.robot.subsystems.arm.hardware.ArmSim;
+import frc.robot.subsystems.arm.state.ArmOutputState;
+import frc.robot.subsystems.common.ClampPlug;
 
 public class Robot extends LoggedRobot {
   private RobotContainer m_robotContainer;
@@ -42,7 +46,12 @@ public class Robot extends LoggedRobot {
     Logger.getInstance().start();
 
     ArmHardwareLayerInterface armIO = new ArmSim();
-    ArmDefaultBehavior armBusiness = new ArmDefaultBehavior();
+    ArmDefaultBehavior armBusiness = (ArmDefaultBehavior) new ArmDefaultBehavior().plug(
+      new ClampPlug<ArmOutputState>(-1, 1,
+        (ArmOutputState out) -> out.voltage(),
+        (Optional<Double> clamped, ArmOutputState original) -> new ArmOutputState(clamped.or(original::voltage), original.adjustOffsetDegrees())
+      )
+    );
     this.arm = new ArmSubsystem(armIO, armBusiness);
   }
 
